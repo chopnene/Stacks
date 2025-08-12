@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Color Sorting Puzzle</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .game-header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .game-header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 10px 20px;
+            border-radius: 10px;
+            min-width: 120px;
+        }
+        
+        .game-content {
+            display: flex;
+            padding: 30px;
+        }
+        
+        .tubes-container {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .tube {
+            width: 70px;
+            height: 220px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px 5px 30px 30px;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .tube::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .tube.selected {
+            transform: translateY(-10px);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+        
+        .water {
+            width: 90%;
+            height: 40px;
+            border-radius: 5px;
+            transition: all 0.5s ease;
+        }
+        
+        .water.spilling {
+            animation: spill 0.8s ease-in-out;
+        }
+        
+        @keyframes spill {
+            0% { transform: scaleY(1); }
+            25% { transform: scaleY(0.8) scaleX(1.1); }
+            50% { transform: scaleY(0.6) scaleX(1.2); }
+            75% { transform: scaleY(0.8) scaleX(1.1); }
+            100% { transform: scaleY(1); }
+        }
+        
+        .game-controls {
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            padding: 20px;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            line-height: 1.6;
+        }
+        
+        .instructions h3 {
+            margin-bottom: 15px;
+            color: #ffcc00;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 94, 98, 0.4);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 94, 98, 0.6);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .level-indicator {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .level-indicator h3 {
+            margin-bottom: 10px;
+            color: #ffcc00;
+        }
+        
+        .level-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(to right, #00c9ff, #92fe9d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Water colors */
+        .color-1 { background: linear-gradient(to bottom, #FF416C, #FF4B2B); }
+        .color-2 { background: linear-gradient(to bottom, #38ef7d, #11998e); }
+        .color-3 { background: linear-gradient(to bottom, #5D69BE, #C89FEB); }
+        .color-4 { background: linear-gradient(to bottom, #FFE000, #799F0C); }
+        .color-5 { background: linear-gradient(to bottom, #3494E6, #EC6EAD); }
+        .color-6 { background: linear-gradient(to bottom, #f46b45, #eea849); }
+        
+        /* Floating bubbles */
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 0.7; }
+            100% { transform: translateY(-100vh) translateX(20vw); opacity: 0; }
+        }
+        
+        /* Win overlay */
+        .win-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        
+        .win-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .win-content {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f);
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transform: scale(0.8);
+            animation: popIn 0.5s 0.2s forwards;
+        }
+        
+        @keyframes popIn {
+            to { transform: scale(1); }
+        }
+        
+        .win-content h2 {
+            font-size: 3rem;
+            color: #ffcc00;
+            margin-bottom: 20px;
+        }
+        
+        .win-content p {
+            font-size: 1.5rem;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .game-content {
+                flex-direction: column;
+            }
+            
+            .game-controls {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .instructions, .controls, .level-indicator {
+                flex: 1;
+                min-width: 250px;
+            }
+            
+            .tubes-container {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .tubes-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .tube {
+                width: 60px;
+                height: 180px;
+            }
+            
+            .game-header h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1><i class="fas fa-fill-drip"></i> Water Color Sorting</h1>
+            <p>Sort the colored water into matching tubes. Only same colors can stack!</p>
+            <div class="stats">
+                <div class="stat-box">
+                    <i class="fas fa-clock"></i> Time: <span id="timer">00:00</span>
+                </div>
+                <div class="stat-box">
+                    <i class="fas fa-tint"></i> Moves: <span id="moves">0</span>
+                </div>
+                <div class="stat-box">
+                    <i class="fas fa-star"></i> Level: <span id="level">1</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-content">
+            <div class="tubes-container" id="tubesContainer">
+                <!-- Tubes will be generated by JavaScript -->
+            </div>
+            
+            <div class="game-controls">
+                <div class="instructions">
+                    <h3><i class="fas fa-info-circle"></i> How to Play</h3>
+                    <ul>
+                        <li>Click a tube to select it (glows white)</li>
+                        <li>Click another tube to pour water</li>
+                        <li>Only pour onto same color or empty tube</li>
+                        <li>Complete when each tube has one color</li>
+                        <li>You can pour until tube is full (4 colors)</li>
+                    </ul>
+                </div>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" id="restartBtn">
+                        <i class="fas fa-redo"></i> Restart Level
+                    </button>
+                    <button class="btn btn-secondary" id="newGameBtn">
+                        <i class="fas fa-plus-circle"></i> New Game
+                    </button>
+                    <button class="btn btn-secondary" id="hintBtn">
+                        <i class="fas fa-lightbulb"></i> Get Hint
+                    </button>
+                </div>
+                
+                <div class="level-indicator">
+                    <h3><i class="fas fa-trophy"></i> Current Level</h3>
+                    <div class="level-number">1</div>
+                    <p>Complete to unlock next level</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-content">
+            <h2>Congratulations!</h2>
+            <p>You sorted all the colors!</p>
+            <p>Moves: <span id="finalMoves">0</span> | Time: <span id="finalTime">00:00</span></p>
+            <button class="btn btn-primary" id="nextLevelBtn">
+                <i class="fas fa-arrow-right"></i> Next Level
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game state
+            const gameState = {
+                tubes: [],
+                selectedTube: null,
+                moves: 0,
+                startTime: null,
+                timerInterval: null,
+                level: 1,
+                gameActive: true
+            };
+            
+            // DOM elements
+            const tubesContainer = document.getElementById('tubesContainer');
+            const movesElement = document.getElementById('moves');
+            const timerElement = document.getElementById('timer');
+            const levelElement = document.getElementById('level');
+            const restartBtn = document.getElementById('restartBtn');
+            const newGameBtn = document.getElementById('newGameBtn');
+            const hintBtn = document.getElementById('hintBtn');
+            const winOverlay = document.getElementById('winOverlay');
+            const nextLevelBtn = document.getElementById('nextLevelBtn');
+            const finalMoves = document.getElementById('finalMoves');
+            const finalTime = document.getElementById('finalTime');
+            
+            // Color definitions
+            const colors = ['color-1', 'color-2', 'color-3', 'color-4', 'color-5', 'color-6'];
+            
+            // Initialize game
+            function initGame() {
+                gameState.moves = 0;
+                gameState.selectedTube = null;
+                gameState.startTime = new Date();
+                movesElement.textContent = gameState.moves;
+                levelElement.textContent = gameState.level;
+                
+                // Clear previous tubes
+                tubesContainer.innerHTML = '';
+                
+                // Create tubes based on level
+                createLevel(gameState.level);
+                
+                // Start timer
+                clearInterval(gameState.timerInterval);
+                gameState.timerInterval = setInterval(updateTimer, 1000);
+                updateTimer();
+                
+                // Close win overlay
+                winOverlay.classList.remove('active');
+                gameState.gameActive = true;
+                
+                // Create floating bubbles
+                createBubbles();
+            }
+            
+            // Create bubbles for background effect
+            function createBubbles() {
+                const bubblesContainer = document.querySelector('.bubbles');
+                if (bubblesContainer) bubblesContainer.remove();
+                
+                const bubbles = document.createElement('div');
+                bubbles.className = 'bubbles';
+                bubbles.style.position = 'fixed';
+                bubbles.style.top = '0';
+                bubbles.style.left = '0';
+                bubbles.style.width = '100%';
+                bubbles.style.height = '100%';
+                bubbles.style.pointerEvents = 'none';
+                bubbles.style.zIndex = '-1';
+                document.body.appendChild(bubbles);
+                
+                // Create multiple bubbles
+                for (let i = 0; i < 20; i++) {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bubble';
+                    const size = Math.random() * 60 + 20;
+                    bubble.style.width = `${size}px`;
+                    bubble.style.height = `${size}px`;
+                    bubble.style.left = `${Math.random() * 100}%`;
+                    bubble.style.bottom = `-${size}px`;
+                    bubble.style.animationDuration = `${Math.random() * 20 + 10}s`;
+                    bubble.style.animationDelay = `${Math.random() * 5}s`;
+                    bubbles.appendChild(bubble);
+                }
+            }
+            
+            // Create game level
+            function createLevel(level) {
+                gameState.tubes = [];
+                
+                // Based on level, create different configurations
+                let tubeCount, colorCount;
+                if (level === 1) {
+                    tubeCount = 5;
+                    colorCount = 3;
+                } else if (level === 2) {
+                    tubeCount = 6;
+                    colorCount = 4;
+                } else {
+                    tubeCount = 7;
+                    colorCount = 5;
+                }
+                
+                // Create tubes
+                for (let i = 0; i < tubeCount; i++) {
+                    const tube = {
+                        id: i,
+                        waters: [],
+                        element: null
+                    };
+                    
+                    gameState.tubes.push(tube);
+                    
+                    // Create tube element
+                    const tubeElement = document.createElement('div');
+                    tubeElement.className = 'tube';
+                    tubeElement.dataset.id = i;
+                    tube.element = tubeElement;
+                    
+                    // Add click event
+                    tubeElement.addEventListener('click', () => selectTube(i));
+                    
+                    tubesContainer.appendChild(tubeElement);
+                }
+                
+                // Generate random water colors
+                const allWaters = [];
+                for (let i = 0; i < colorCount; i++) {
+                    // Each color appears 4 times
+                    for (let j = 0; j < 4; j++) {
+                        allWaters.push(colors[i]);
+                    }
+                }
+                
+                // Shuffle the colors
+                shuffleArray(allWaters);
+                
+                // Distribute waters to first few tubes
+                const tubesWithWater = tubeCount - 2; // Leave 2 tubes empty
+                for (let i = 0; i < allWaters.length; i++) {
+                    const tubeIndex = i % tubesWithWater;
+                    gameState.tubes[tubeIndex].waters.push(allWaters[i]);
+                }
+                
+                // Render initial waters
+                renderWaters();
+            }
+            
+            // Render waters in tubes
+            function renderWaters() {
+                gameState.tubes.forEach(tube => {
+                    // Clear existing waters
+                    tube.element.innerHTML = '';
+                    tube.element.className = 'tube';
+                    
+                    // Add waters
+                    tube.waters.forEach(waterColor => {
+                        const waterElement = document.createElement('div');
+                        waterElement.className = `water ${waterColor}`;
+                        tube.element.appendChild(waterElement);
+                    });
+                    
+                    // Add tube top
+                    const tubeTop = document.createElement('div');
+                    tubeTop.className = 'tube-top';
+                    tube.element.appendChild(tubeTop);
+                });
+            }
+            
+            // Select tube for pouring
+            function selectTube(tubeIndex) {
+                if (!gameState.gameActive) return;
+                
+                const tube = gameState.tubes[tubeIndex];
+                
+                // If no tube is selected yet
+                if (gameState.selectedTube === null) {
+                    // Can only select non-empty tubes
+                    if (tube.waters.length > 0) {
+                        gameState.selectedTube = tubeIndex;
+                        tube.element.classList.add('selected');
+                    }
+                } 
+                // If we're selecting a different tube
+                else if (gameState.selectedTube !== tubeIndex) {
+                    const sourceTube = gameState.tubes[gameState.selectedTube];
+                    
+                    // Try to pour water
+                    if (canPour(sourceTube, tube)) {
+                        pourWater(sourceTube, tube);
+                        gameState.moves++;
+                        movesElement.textContent = gameState.moves;
+                        
+                        // Check win condition
+                        if (checkWin()) {
+                            winGame();
+                        }
+                    }
+                    
+                    // Deselect the tube
+                    sourceTube.element.classList.remove('selected');
+                    gameState.selectedTube = null;
+                } 
+                // Clicking the same tube again
+                else {
+                    // Deselect
+                    tube.element.classList.remove('selected');
+                    gameState.selectedTube = null;
+                }
+            }
+            
+            // Check if pouring is possible
+            function canPour(source, target) {
+                // Can't pour from empty tube
+                if (source.waters.length === 0) return false;
+                
+                // Can't pour to a full tube
+                if (target.waters.length >= 4) return false;
+                
+                // Can pour to empty tube
+                if (target.waters.length === 0) return true;
+                
+                // Check if top colors match
+                const sourceTop = source.waters[source.waters.length - 1];
+                const targetTop = target.waters[target.waters.length - 1];
+                
+                return sourceTop === targetTop;
+            }
+            
+            // Pour water from one tube to another
+            function pourWater(source, target) {
+                // Get the water to move (and how many of same color)
+                const sourceColor = source.waters[source.waters.length - 1];
+                let count = 0;
+                
+                // Count how many of the same color are on top
+                for (let i = source.waters.length - 1; i >= 0; i--) {
+                    if (source.waters[i] === sourceColor) {
+                        count++;
+                    } else {
+                        break;
+                    }
+                }
+                
+                // Don't pour more than target can hold
+                const availableSpace = 4 - target.waters.length;
+                count = Math.min(count, availableSpace);
+                
+                // Move the waters
+                for (let i = 0; i < count; i++) {
+                    const water = source.waters.pop();
+                    target.waters.push(water);
+                }
+                
+                // Add animation effect
+                const waterElements = source.element.querySelectorAll('.water');
+                if (waterElements.length > 0) {
+                    const waterToAnimate = waterElements[waterElements.length - 1];
+                    waterToAnimate.classList.add('spilling');
+                    
+                    setTimeout(() => {
+                        waterToAnimate.classList.remove('spilling');
+                        renderWaters();
+                    }, 800);
+                } else {
+                    renderWaters();
+                }
+            }
+            
+            // Check win condition
+            function checkWin() {
+                return gameState.tubes.every(tube => {
+                    // Tube is either empty or all waters are same color
+                    if (tube.waters.length === 0) return true;
+                    
+                    const firstColor = tube.waters[0];
+                    return tube.waters.length === 4 && tube.waters.every(color => color === firstColor);
+                });
+            }
+            
+            // Win game
+            function winGame() {
+                gameState.gameActive = false;
+                clearInterval(gameState.timerInterval);
+                
+                // Update final stats
+                finalMoves.textContent = gameState.moves;
+                finalTime.textContent = timerElement.textContent;
+                
+                // Show win overlay
+                setTimeout(() => {
+                    winOverlay.classList.add('active');
+                }, 1000);
+            }
+            
+            // Update timer
+            function updateTimer() {
+                if (!gameState.startTime) return;
+                
+                const now = new Date();
+                const diff = Math.floor((now - gameState.startTime) / 1000);
+                const minutes = Math.floor(diff / 60).toString().padStart(2, '0');
+                const seconds = (diff % 60).toString().padStart(2, '0');
+                
+                timerElement.textContent = `${minutes}:${seconds}`;
+            }
+            
+            // Utility function to shuffle array
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+            
+            // Event listeners
+            restartBtn.addEventListener('click', () => {
+                initGame();
+            });
+            
+            newGameBtn.addEventListener('click', () => {
+                gameState.level = 1;
+                initGame();
+            });
+            
+            nextLevelBtn.addEventListener('click', () => {
+                gameState.level++;
+                initGame();
+            });
+            
+            hintBtn.addEventListener('click', () => {
+                if (!gameState.gameActive) return;
+                
+                // Simple hint: flash a valid move
+                for (let i = 0; i < gameState.tubes.length; i++) {
+                    for (let j = 0; j < gameState.tubes.length; j++) {
+                        if (i !== j && canPour(gameState.tubes[i], gameState.tubes[j])) {
+                            gameState.tubes[i].element.classList.add('selected');
+                            gameState.tubes[j].element.style.boxShadow = '0 0 20px #ffcc00';
+                            
+                            setTimeout(() => {
+                                gameState.tubes[i].element.classList.remove('selected');
+                                gameState.tubes[j].element.style.boxShadow = '';
+                            }, 1000);
+                            
+                            return;
+                        }
+                    }
+                }
+            });
+            
+            // Initialize the game
+            initGame();
+        });
+    </script>
+</body>
+</html>
